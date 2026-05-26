@@ -1,0 +1,3 @@
+[submodule "diffbmp"]
+	path = diffbmp
+	url = https://github.com/smhongok/diffbmp.git

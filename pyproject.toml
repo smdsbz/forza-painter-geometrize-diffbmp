@@ -1,0 +1,32 @@
+[project]
+name = "forza-painter-geometrize-diffbmp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "smdsbz", email = "smdsbz@qq.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "pydiffbmp>=0.1.3",
+    "torch>=2.5,<2.7",
+    "torchvision>=0.20,<0.22",
+]
+
+[tool.uv.sources]
+pydiffbmp = { path = "./diffbmp" }
+torch = { index = "pytorch-cu126" }
+torchvision = { index = "pytorch-cu126" }
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://mirrors.aliyun.com/pytorch-wheels/cu126"
+format = "flat"
+explicit = true
+
+[project.scripts]
+forza-painter-geometrize-diffbmp = "forza_painter_geometrize_diffbmp:main"
+
+[build-system]
+requires = ["uv_build>=0.11.8,<0.12.0"]
+build-backend = "uv_build"
