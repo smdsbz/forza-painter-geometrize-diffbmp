@@ -27,6 +27,7 @@ explicit = true
 [project.scripts]
 forza-painter-geometrize-diffbmp = "forza_painter_geometrize_diffbmp:main"
 generate-primitives = "forza_painter_geometrize_diffbmp.generate_primitives:main"
+fit-image = "forza_painter_geometrize_diffbmp.fit_image:main"
 
 [build-system]
 requires = ["uv_build>=0.11.8,<0.12.0"]
