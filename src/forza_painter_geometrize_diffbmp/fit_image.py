@@ -7,12 +7,20 @@ from pathlib import Path
 # Fix Unicode emoji prints on Windows GBK terminals
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
+# Preload cairo DLL from MSYS2 before any pydiffbmp import touches cairocffi
+if sys.platform == "win32":
+    _cairo_dll = r"C:\msys64\mingw64\bin\libcairo-2.dll"
+    if os.path.isfile(_cairo_dll):
+        import ctypes
+        ctypes.CDLL(_cairo_dll)
+
 import numpy as np
 import torch
 from PIL import Image
 
 from pydiffbmp.core.preprocessing import Preprocessor
 from pydiffbmp.core.renderer.simple_tile_renderer import SimpleTileRenderer
+import pydiffbmp.core.renderer.simple_tile_renderer as _simple_tile_renderer
 from pydiffbmp.core.initializer.svgsplat_initializater import StructureAwareInitializer
 
 
@@ -79,7 +87,7 @@ def load_primitive_bitmaps(paths: list[str], output_width: int, device: torch.de
     return S, cmaps
 
 
-def fit_image(config: dict) -> str:
+def fit_image(config: dict, render_process: bool = False) -> str:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"device: {device}", file=sys.stderr)
 
@@ -101,11 +109,24 @@ def fit_image(config: dict) -> str:
 
     # ── 3. create renderer ────────────────────────────────────────────
     opt_cfg = config["optimization"]
+    init_cfg = config["initialization"]
     post_cfg = config.get("postprocessing", {})
-    out_dir = Path(post_cfg.get("output_folder", "./outputs/"))
-    if not out_dir.is_absolute():
-        out_dir = PROJECT_ROOT / out_dir
-    out_dir.mkdir(parents=True, exist_ok=True)
+
+    image_name = Path(pp_cfg["img_path"]).stem
+    if render_process:
+        out_dir = Path(post_cfg.get("output_folder", "./outputs/"))
+        if not out_dir.is_absolute():
+            out_dir = PROJECT_ROOT / out_dir
+        process_dir = out_dir / f"{image_name}_process"
+        process_dir.mkdir(parents=True, exist_ok=True)
+        Image.fromarray(target_np).save(str(process_dir / "target.png"))
+        renderer_out = str(process_dir)
+    else:
+        out_dir = Path(post_cfg.get("output_folder", "./outputs/"))
+        if not out_dir.is_absolute():
+            out_dir = PROJECT_ROOT / out_dir
+        out_dir.mkdir(parents=True, exist_ok=True)
+        renderer_out = str(out_dir)
 
     renderer = SimpleTileRenderer(
         canvas_size=(H, W),
@@ -116,11 +137,11 @@ def fit_image(config: dict) -> str:
         sigma=0.0,
         c_blend=opt_cfg.get("c_blend", 0.0),
         primitive_colors=primitive_colors,
-        output_path=str(out_dir),
+        output_path=renderer_out,
+        max_prims_per_pixel=init_cfg.get("max_prims_per_pixel"),
     )
 
     # ── 4. initialize ─────────────────────────────────────────────────
-    init_cfg = config["initialization"]
     initializer = StructureAwareInitializer(init_cfg)
     x, y, r, v, theta, c = renderer.initialize_parameters(
         initializer=initializer,
@@ -129,6 +150,8 @@ def fit_image(config: dict) -> str:
     print(f"initialized: {len(x)} primitives", file=sys.stderr)
 
     # ── 5. optimize ───────────────────────────────────────────────────
+    if render_process:
+        _simple_tile_renderer.DEBUG_MODE_SAVE = True
     x, y, r, v, theta, c = renderer.optimize_parameters(
         x, y, r, v, theta, c,
         target_image=I_target,
@@ -152,8 +175,10 @@ def fit_image(config: dict) -> str:
     rendered_np = rendered.detach().cpu().numpy()
     rendered_np = (rendered_np * 255).clip(0, 255).astype(np.uint8)
 
-    output_path = out_dir / Path(pp_cfg["img_path"]).stem
-    out_file = str(output_path.with_suffix(".png"))
+    if render_process:
+        out_file = str(process_dir / "final.png")
+    else:
+        out_file = str(out_dir / f"{image_name}.png")
     Image.fromarray(rendered_np).save(out_file)
     print(f"saved: {out_file}", file=sys.stderr)
     return out_file
@@ -164,6 +189,8 @@ def main() -> None:
     parser.add_argument("image", help="Path to the input image")
     parser.add_argument("-c", "--config", default="config/default.json",
                         help="Path to diffbmp config JSON (default: config/default.json)")
+    parser.add_argument("--render-fit-process", action="store_true",
+                        help="Save intermediate renders and target to <output>/<name>_process/")
     args = parser.parse_args()
 
     config_path = Path(args.config)
@@ -174,7 +201,7 @@ def main() -> None:
         sys.exit(1)
 
     config = load_config(config_path, os.path.abspath(args.image))
-    out_file = fit_image(config)
+    out_file = fit_image(config, render_process=args.render_fit_process)
     print(out_file)
 
 

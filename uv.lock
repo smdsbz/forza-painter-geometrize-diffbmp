@@ -443,6 +443,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "pydiffbmp" },
+    { name = "setuptools" },
     { name = "torch" },
     { name = "torchvision", version = "0.21.0", source = { registry = "https://mirrors.aliyun.com/pytorch-wheels/cu126" }, marker = "python_full_version < '3.14' and platform_machine == 'aarch64' and sys_platform == 'linux'" },
     { name = "torchvision", version = "0.21.0+cu126", source = { registry = "https://mirrors.aliyun.com/pytorch-wheels/cu126" }, marker = "python_full_version >= '3.14' or platform_machine != 'aarch64' or sys_platform != 'linux'" },
@@ -451,6 +452,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "pydiffbmp", directory = "diffbmp" },
+    { name = "setuptools" },
     { name = "torch", specifier = ">=2.5,<2.7", index = "https://mirrors.aliyun.com/pytorch-wheels/cu126" },
     { name = "torchvision", specifier = ">=0.20,<0.22", index = "https://mirrors.aliyun.com/pytorch-wheels/cu126" },
 ]
