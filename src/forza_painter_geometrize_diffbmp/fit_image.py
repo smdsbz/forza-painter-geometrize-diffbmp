@@ -196,6 +196,17 @@ def fit_image(config: dict, render_process: bool = False) -> str:
     else:
         out_file = str(out_dir / f"{image_name}.png")
     Image.fromarray(rendered_np).save(out_file)
+
+    # ── 7. postprocessing ──────────────────────────────────────────────
+    if post_cfg.get("compute_psnr"):
+        import math
+        mse = np.mean((target_np.astype(np.float32) - rendered_np.astype(np.float32)) ** 2)
+        if mse > 0:
+            psnr = 20 * math.log10(255.0 / math.sqrt(mse))
+            print(f"PSNR: {psnr:.2f} dB", file=sys.stderr)
+        else:
+            print("PSNR: ∞ dB", file=sys.stderr)
+
     print(f"saved: {out_file}", file=sys.stderr)
     return out_file
 

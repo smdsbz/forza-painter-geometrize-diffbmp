@@ -57,12 +57,14 @@ def right_triangle(size_w: int, size_h: int) -> Image.Image:
 
 def generate():
     ratios = {
-        "square":  [(1, w) for w in range(1, 6)],                     # 1x1..1x5
-        "circle":  [(1, w) for w in range(1, 6)],                     # 1x1..1x5
-        "triangle-isosceles": [(w, 1) for w in range(5, 0, -1)]      # 5x1..1x1
-                             + [(1, w) for w in range(2, 6)],         # 1x2..1x5
-        "triangle-right":    [(w, 1) for w in range(5, 0, -1)]      # 5x1..1x1
-                             + [(1, w) for w in range(2, 6)],         # 1x2..1x5
+        "square":  [(1, w) for w in [1, 4, 8]],                     # 1x1, 1x4, 1x8
+        "circle":  [(1, w) for w in [1, 4, 8]],                     # 1x1, 1x4, 1x8
+        "triangle-isosceles": [(w, 1) for w in [16, 8, 4]]            # 16x1, 8x1, 4x1
+                             + [(1, 1)]
+                             + [(1, w) for w in [4, 8, 16]],           # 1x4, 1x8, 1x16
+        "triangle-right":    [(w, 1) for w in [16, 8, 4]]            # 16x1, 8x1, 4x1
+                             + [(1, 1)]
+                             + [(1, w) for w in [4, 8, 16]],           # 1x4, 1x8, 1x16
     }
 
     generators = {

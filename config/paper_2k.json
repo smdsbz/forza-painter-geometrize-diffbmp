@@ -1,0 +1,36 @@
+{
+    "preprocessing": {
+        "final_width": [1020],
+        "img_path": [
+            "images/DIV2k/0804.png"
+        ]
+    },
+    "primitive": {
+        "primitive_file": "letter_S_128.png",
+        "convert_to_svg": false,
+        "primitive_hollow": false,
+        "output_width": 128
+    },
+    "initialization": {
+        "initializer": "structure_aware",
+        "N": [2000],
+        "radii_min": 2,
+        "radii_max": 50,
+        "debug_mode": true
+    },
+    "optimization": {
+        "use_fp16": false,
+        "num_iterations": 50,
+        "learning_rate": {
+            "default": 0.1
+        },
+        "do_decay": true,
+        "decay_rate": 0.999,
+        "do_gaussian_blur": true
+    },
+    "postprocessing": {
+        "output_folder": "outputs/",
+        "compute_psnr": true,
+        "export_psd": false
+    }
+}
