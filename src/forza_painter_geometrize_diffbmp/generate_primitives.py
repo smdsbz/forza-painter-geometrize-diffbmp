@@ -13,7 +13,7 @@ def square(size_w: int, size_h: int) -> Image.Image:
     draw = ImageDraw.Draw(img)
     x0 = (CANVAS - size_w) // 2
     y0 = (CANVAS - size_h) // 2
-    draw.rectangle([x0, y0, x0 + size_w - 1, y0 + size_h - 1], fill=(255, 255, 255, 255))
+    draw.rectangle([x0, y0, x0 + size_w - 1, y0 + size_h - 1], fill=(0, 0, 0, 255))
     return img
 
 
@@ -22,7 +22,7 @@ def circle(size_w: int, size_h: int) -> Image.Image:
     draw = ImageDraw.Draw(img)
     x0 = (CANVAS - size_w) // 2
     y0 = (CANVAS - size_h) // 2
-    draw.ellipse([x0, y0, x0 + size_w - 1, y0 + size_h - 1], fill=(255, 255, 255, 255))
+    draw.ellipse([x0, y0, x0 + size_w - 1, y0 + size_h - 1], fill=(0, 0, 0, 255))
     return img
 
 
@@ -34,7 +34,7 @@ def isosceles(size_w: int, size_h: int) -> Image.Image:
     bot_y = top_y + size_h - 1
     left_x = cx - size_w // 2
     right_x = left_x + size_w - 1
-    draw.polygon([(cx, top_y), (left_x, bot_y), (right_x, bot_y)], fill=(255, 255, 255, 255))
+    draw.polygon([(cx, top_y), (left_x, bot_y), (right_x, bot_y)], fill=(0, 0, 0, 255))
     return img
 
 
@@ -51,7 +51,7 @@ def right_triangle(size_w: int, size_h: int) -> Image.Image:
     a = (left_x,                bot_y)              # bottom-left  = right angle
     b = (left_x,                bot_y - size_h + 1)  # top-left     (vertical edge ↑)
     c = (left_x + size_w - 1,   bot_y)              # bottom-right (horizontal edge →)
-    draw.polygon([a, b, c], fill=(255, 255, 255, 255))
+    draw.polygon([a, b, c], fill=(0, 0, 0, 255))
     return img
 
 
