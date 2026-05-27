@@ -109,6 +109,11 @@ def fit_image(config: dict, render_process: bool = False) -> str:
 
     # ── 1. load target image ──────────────────────────────────────────
     pp_cfg = config["preprocessing"]
+    resolution = pp_cfg.get("final_resolution")
+    if resolution and "final_width" not in pp_cfg:
+        img_w, img_h = Image.open(pp_cfg["img_path"]).size
+        scale = resolution / max(img_w, img_h)
+        pp_cfg["final_width"] = max(1, int(img_w * scale))
     preprocessor = Preprocessor(final_width=pp_cfg.get("final_width", 256))
     target_np = preprocessor.load_image_8bit_color(pp_cfg)
     H, W = preprocessor.final_height, preprocessor.final_width
@@ -176,6 +181,10 @@ def fit_image(config: dict, render_process: bool = False) -> str:
     )
 
     # ── 6. render final ───────────────────────────────────────────────
+    opacity = torch.sigmoid(v.detach())
+    alive = (opacity > 0.1).sum().item()
+    print(f"effective primitives: {alive}/{len(v)} (opacity > 0.1)", file=sys.stderr)
+
     bg_color = opt_cfg.get("bg_color", "white")
     with torch.no_grad():
         final_bg = renderer._get_background_for_render(bg_color, export=True)

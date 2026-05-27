@@ -32,7 +32,7 @@
     },
     "initialization": {
         "initializer": "structure_aware",
-        "N": 3000,
+        "N": 300,
         "radii_min": 1,
         "radii_max": 50,
         "detail_first": true,
