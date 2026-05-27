@@ -7,12 +7,28 @@ from pathlib import Path
 # Fix Unicode emoji prints on Windows GBK terminals
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-# Preload cairo DLL from MSYS2 before any pydiffbmp import touches cairocffi
+def _find_cairo_dll():
+    """Search common MSYS2 install paths for libcairo-2.dll."""
+    _candidates = [
+        r"C:\msys64\mingw64\bin",
+        r"C:\msys64\ucrt64\bin",
+        r"C:\msys64\clang64\bin",
+    ]
+    import ctypes
+    for _d in _candidates:
+        _dll = os.path.join(_d, "libcairo-2.dll")
+        if os.path.isfile(_dll):
+            os.add_dll_directory(_d)
+            ctypes.CDLL(_dll)
+            return
+    raise RuntimeError(
+        "\u672a\u627e\u5230 Cairo DLL\u3002\u8bf7\u5b89\u88c5 MSYS2 \u5e76\u6267\u884c:\n"
+        "  winget install MSYS2.MSYS2\n"
+        "  pacman -S mingw-w64-x86_64-cairo"
+    )
+
 if sys.platform == "win32":
-    _cairo_dll = r"C:\msys64\mingw64\bin\libcairo-2.dll"
-    if os.path.isfile(_cairo_dll):
-        import ctypes
-        ctypes.CDLL(_cairo_dll)
+    _find_cairo_dll()
 
 import numpy as np
 import torch

@@ -39,7 +39,7 @@ GPU：NVIDIA RTX 3060 Laptop（6 GB），CUDA Toolkit 12.8，Driver 13.2
 ## 系统坑
 
 - **MSYS2 sh.exe**：PATH 中的 `C:\msys64\usr\bin\sh.exe` 会把 MSVC 编译器标志（`/showIncludes` → `C:/msys64/showIncludes`）当成 POSIX 路径转换。编译 CUDA 扩展前先把它从 PATH 移除。
-- **cairosvg DLL**：此 Windows 系统没有安装 Cairo。Cairo DLL 由 MSYS2 提供（`C:\msys64\mingw64\bin`），`fit_image.py` 启动时会自动将该目录加入 PATH。
+- **cairosvg DLL**：Cairo DLL 由 MSYS2 提供。`fit_image.py` 启动时自动搜索 `C:\msys64\{mingw64,ucrt64,clang64}\bin` 目录，找到后通过 `os.add_dll_directory()` 注册。
 
 ## 架构
 
