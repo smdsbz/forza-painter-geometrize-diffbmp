@@ -115,7 +115,13 @@ def fit_image(config: dict, render_process: bool = False) -> str:
         scale = resolution / max(img_w, img_h)
         pp_cfg["final_width"] = max(1, int(img_w * scale))
     preprocessor = Preprocessor(final_width=pp_cfg.get("final_width", 256))
-    target_np = preprocessor.load_image_8bit_color(pp_cfg)
+    exist_bg = pp_cfg.get("exist_bg", True)
+    if exist_bg:
+        target_np = preprocessor.load_image_8bit_color(pp_cfg)
+        target_binary_mask = None
+    else:
+        target_np, binary_mask_np = preprocessor.load_image_8bit_color_opacity(pp_cfg)
+        target_binary_mask = torch.from_numpy(binary_mask_np[:, :] > 0).to(device)
     H, W = preprocessor.final_height, preprocessor.final_width
     I_target = torch.tensor(target_np.astype(np.float32) / 255.0, device=device)
     print(f"target: {W}x{H}", file=sys.stderr)
@@ -167,6 +173,7 @@ def fit_image(config: dict, render_process: bool = False) -> str:
     x, y, r, v, theta, c = renderer.initialize_parameters(
         initializer=initializer,
         target_image=I_target,
+        target_binary_mask=target_binary_mask,
     )
     print(f"initialized: {len(x)} primitives", file=sys.stderr)
 
@@ -177,6 +184,7 @@ def fit_image(config: dict, render_process: bool = False) -> str:
         x, y, r, v, theta, c,
         target_image=I_target,
         opt_conf=opt_cfg,
+        target_binary_mask=target_binary_mask,
         initializer=initializer,
     )
 
@@ -209,7 +217,10 @@ def fit_image(config: dict, render_process: bool = False) -> str:
     # ── 7. postprocessing ──────────────────────────────────────────────
     if post_cfg.get("compute_psnr"):
         import math
-        mse = np.mean((target_np.astype(np.float32) - rendered_np.astype(np.float32)) ** 2)
+        _target = target_np.astype(np.float32)
+        if _target.shape[2] == 4:
+            _target = _target[:, :, :3]
+        mse = np.mean((_target - rendered_np.astype(np.float32)) ** 2)
         if mse > 0:
             psnr = 20 * math.log10(255.0 / math.sqrt(mse))
             print(f"PSNR: {psnr:.2f} dB", file=sys.stderr)

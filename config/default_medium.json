@@ -2,7 +2,7 @@
     "preprocessing": {
         "final_resolution": 640,
         "square_crop": false,
-        "exist_bg": true,
+        "exist_bg": false,
         "resampling": "LANCZOS"
     },
     "primitive": {
